@@ -230,7 +230,7 @@ td.code{
 }
 td.name{color:var(--ink-s);font-size:.87rem;}
 td.price{color:var(--ink-m);font-variant-numeric:tabular-nums;width:108px;font-size:.87rem;}
-td.qty-td{width:92px;}
+td.qty-td{width:120px;}
 td.sub{
   font-family:"Noto Serif TC",serif; font-weight:700;
   font-variant-numeric:tabular-nums; color:var(--ink);
@@ -305,6 +305,47 @@ td.sub.zero{color:var(--line);font-weight:400;}
   box-shadow:0 6px 18px rgba(61,90,138,.46);
 }
 
+/* ── 頻率換算 ── */
+.freq-btn{
+  font-size:.6rem;padding:.12rem .35rem;
+  border:1px solid var(--acc);color:var(--acc);
+  background:transparent;border-radius:3px;cursor:pointer;
+  margin-left:.3rem;white-space:nowrap;transition:all .15s;
+  vertical-align:middle;
+}
+.freq-btn:hover{background:var(--acc);color:#fff;}
+.freq-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.45);z-index:1100;
+  align-items:center;justify-content:center;
+}
+.freq-overlay.open{display:flex;}
+.freq-modal{
+  background:#fff;border-radius:6px;
+  padding:1.4rem 1.6rem;min-width:290px;max-width:360px;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);
+}
+.freq-modal h3{font-size:.92rem;margin:0 0 1rem;color:var(--acc-d);font-family:"Noto Serif TC",serif;}
+.freq-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;}
+.freq-row label{font-size:.78rem;color:var(--ink-m);min-width:76px;}
+.freq-row select{
+  flex:1;padding:.3rem .5rem;
+  border:1px solid var(--line);border-radius:3px;
+  font-size:.82rem;color:var(--ink);
+}
+.freq-result{
+  background:rgba(61,90,138,.07);border-radius:4px;
+  padding:.65rem 1rem;margin-bottom:1rem;
+  font-size:.88rem;color:var(--acc-d);font-weight:700;text-align:center;
+}
+.freq-actions{display:flex;gap:.5rem;justify-content:flex-end;}
+.freq-actions button{
+  padding:.38rem .85rem;border-radius:3px;
+  cursor:pointer;font-size:.83rem;border:none;font-weight:600;
+}
+.freq-cancel{background:rgba(236,231,221,.8);color:var(--ink-m);}
+.freq-apply{background:var(--acc);color:#fff;}
+
 /* ── NOTES ── */
 .notes{
   background:rgba(236,231,221,.3);
@@ -347,7 +388,7 @@ footer{
   .hd-logo{height:54px;}
   th,td{padding:.4rem .48rem;}
   td.code{font-size:.95rem;width:80px;}
-  td.qty-td{width:74px;}
+  td.qty-td{width:100px;}
   .field{min-width:135px;}
 }
 @media print{
@@ -355,7 +396,12 @@ footer{
   .sticky{position:static!important;box-shadow:none;}
   .sec.closed .sec-body{max-height:none!important;}
   .sec.closed .chev{transform:rotate(45deg);}
+  .sub-sec.closed .sub-body{max-height:none!important;}
+  .sub-sec.closed .sub-chev{transform:rotate(45deg);}
   .actions{display:none;}
+  .freq-btn{display:none;}
+  .freq-overlay{display:none!important;}
+  .float-result-btn{display:none;}
 }
 </style>
 </head>
@@ -1605,7 +1651,7 @@ function mkTable(items){
       <td class="code">${it.code}</td>
       <td class="name">${it.name}${it.half_covered?'<br><span style="font-size:.7rem;color:#b07d30;font-weight:600;">⚠ 共用區域：補助50%計入額度，另50%全額自付</span>':''}</td>
       <td class="r price">${pc}</td>
-      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}"></td>
+      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}">${(it.code.startsWith('BA')||it.code.startsWith('BB'))?`<button type="button" class="freq-btn" onclick="openFreq('${it.code}')">📅頻率</button>`:''}</td>
       <td class="r sub zero" data-st="${it.code}">—</td>
     </tr>`;
   }
@@ -1685,6 +1731,49 @@ function makeSec(id,title,bodyFn,collapsed=false){
 
 function tog(id){document.getElementById('sec-'+id).classList.toggle('closed');}
 function togSub(id){document.getElementById(id).classList.toggle('closed');}
+
+const FREQ_MAP={1:5,2:9,3:14,4:18,5:23,6:27,7:31};
+const PER30MIN=new Set(['BA02','BA13','BA15-1','BA15-2','BA18','BA20']);
+let freqCode=null;
+
+function openFreq(code){
+  freqCode=code;
+  const is30=PER30MIN.has(code);
+  document.getElementById('freqTitle').textContent=`📅 ${code} 頻率換算`;
+  document.getElementById('freqMinRow').style.display=is30?'flex':'none';
+  document.getElementById('freqDays').value='1';
+  document.getElementById('freqMin').value='1';
+  updateFreqResult();
+  document.getElementById('freqOverlay').classList.add('open');
+}
+
+function closeFreq(){
+  document.getElementById('freqOverlay').classList.remove('open');
+  freqCode=null;
+}
+
+function updateFreqResult(){
+  const visits=FREQ_MAP[parseInt(document.getElementById('freqDays').value)];
+  const is30=freqCode&&PER30MIN.has(freqCode);
+  if(is30){
+    const units=parseInt(document.getElementById('freqMin').value);
+    const total=visits*units;
+    document.getElementById('freqResult').textContent=`${visits} 次 × ${units} 單位 = 每月帶入 ${total} 次`;
+  } else {
+    document.getElementById('freqResult').textContent=`每月帶入 ${visits} 次`;
+  }
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFreq();});
+
+function applyFreq(){
+  const visits=FREQ_MAP[parseInt(document.getElementById('freqDays').value)];
+  const is30=freqCode&&PER30MIN.has(freqCode);
+  const total=is30?visits*parseInt(document.getElementById('freqMin').value):visits;
+  const inp=document.querySelector(`input[data-q="${freqCode}"]`);
+  if(inp){inp.value=total;inp.classList.toggle('on',total>0);calc();}
+  closeFreq();
+}
 
 function updPriceDisplays(){
   const rem=document.getElementById('region').value==='remote';
@@ -1791,6 +1880,38 @@ buildSections();
 document.getElementById('region').addEventListener('change',()=>{updPriceDisplays();calc();});
 calc();
 </script>
+
+<div class="freq-overlay" id="freqOverlay" onclick="if(event.target===this)closeFreq()">
+  <div class="freq-modal">
+    <h3 id="freqTitle">📅 頻率換算</h3>
+    <div class="freq-row">
+      <label>每週幾天</label>
+      <select id="freqDays" onchange="updateFreqResult()">
+        <option value="1">1 天（5 次／月）</option>
+        <option value="2">2 天（9 次／月）</option>
+        <option value="3">3 天（14 次／月）</option>
+        <option value="4">4 天（18 次／月）</option>
+        <option value="5">5 天（23 次／月）</option>
+        <option value="6">6 天（27 次／月）</option>
+        <option value="7">7 天（31 次／月）</option>
+      </select>
+    </div>
+    <div class="freq-row" id="freqMinRow" style="display:none">
+      <label>每次時間</label>
+      <select id="freqMin" onchange="updateFreqResult()">
+        <option value="1">30 分鐘（1 單位）</option>
+        <option value="2">60 分鐘（2 單位）</option>
+        <option value="3">90 分鐘（3 單位）</option>
+        <option value="4">120 分鐘（4 單位）</option>
+      </select>
+    </div>
+    <div class="freq-result" id="freqResult">每月帶入 5 次</div>
+    <div class="freq-actions">
+      <button class="freq-cancel" onclick="closeFreq()">取消</button>
+      <button class="freq-apply" onclick="applyFreq()">帶入次數</button>
+    </div>
+  </div>
+</div>
 
 <button class="float-result-btn"
   onclick="document.getElementById('final-section').scrollIntoView({behavior:'smooth'})">
