@@ -1741,8 +1741,10 @@ function openFreq(code){
   const is30=PER30MIN.has(code);
   document.getElementById('freqTitle').textContent=`📅 ${code} 頻率換算`;
   document.getElementById('freqMinRow').style.display=is30?'flex':'none';
+  document.getElementById('freqCustomRow').style.display=is30?'flex':'none';
   document.getElementById('freqDays').value='1';
   document.getElementById('freqMin').value='1';
+  document.getElementById('freqCustomMin').value='';
   updateFreqResult();
   document.getElementById('freqOverlay').classList.add('open');
 }
@@ -1752,11 +1754,17 @@ function closeFreq(){
   freqCode=null;
 }
 
+function getFreqUnits(){
+  const custom=parseFloat(document.getElementById('freqCustomMin').value);
+  if(custom>0) return custom;
+  return parseInt(document.getElementById('freqMin').value);
+}
+
 function updateFreqResult(){
   const visits=FREQ_MAP[parseInt(document.getElementById('freqDays').value)];
   const is30=freqCode&&PER30MIN.has(freqCode);
   if(is30){
-    const units=parseInt(document.getElementById('freqMin').value);
+    const units=getFreqUnits();
     const total=visits*units;
     document.getElementById('freqResult').textContent=`${visits} 次 × ${units} 單位 = 每月帶入 ${total} 次`;
   } else {
@@ -1769,7 +1777,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFreq();});
 function applyFreq(){
   const visits=FREQ_MAP[parseInt(document.getElementById('freqDays').value)];
   const is30=freqCode&&PER30MIN.has(freqCode);
-  const total=is30?visits*parseInt(document.getElementById('freqMin').value):visits;
+  const total=is30?visits*getFreqUnits():visits;
   const inp=document.querySelector(`input[data-q="${freqCode}"]`);
   if(inp){inp.value=total;inp.classList.toggle('on',total>0);calc();}
   closeFreq();
@@ -1898,12 +1906,19 @@ calc();
     </div>
     <div class="freq-row" id="freqMinRow" style="display:none">
       <label>每次時間</label>
-      <select id="freqMin" onchange="updateFreqResult()">
+      <select id="freqMin" onchange="document.getElementById('freqCustomMin').value='';updateFreqResult()">
         <option value="1">30 分鐘（1 單位）</option>
         <option value="2">60 分鐘（2 單位）</option>
         <option value="3">90 分鐘（3 單位）</option>
         <option value="4">120 分鐘（4 單位）</option>
       </select>
+    </div>
+    <div class="freq-row" id="freqCustomRow" style="display:none">
+      <label>自行填寫</label>
+      <input type="number" id="freqCustomMin" min="1" step="1" placeholder="單位數"
+        style="flex:1;padding:.3rem .5rem;border:1px solid var(--line);border-radius:3px;font-size:.82rem;color:var(--ink);"
+        oninput="updateFreqResult()">
+      <span style="font-size:.75rem;color:var(--ink-m);white-space:nowrap;margin-left:.3rem;">單位</span>
     </div>
     <div class="freq-result" id="freqResult">每月帶入 5 次</div>
     <div class="freq-actions">
