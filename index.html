@@ -1651,7 +1651,7 @@ function mkTable(items){
       <td class="code">${it.code}</td>
       <td class="name">${it.name}${it.half_covered?'<br><span style="font-size:.7rem;color:#b07d30;font-weight:600;">⚠ 共用區域：補助50%計入額度，另50%全額自付</span>':''}</td>
       <td class="r price">${pc}</td>
-      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}">${(it.code.startsWith('BA')||it.code.startsWith('BB'))?`<button type="button" class="freq-btn" onclick="openFreq('${it.code}')">📅頻率</button>`:''}</td>
+      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}">${(it.code.startsWith('BA')||it.code.startsWith('BB')||it.code.startsWith('GA')||it.code.startsWith('SC'))?`<button type="button" class="freq-btn" onclick="openFreq('${it.code}')">📅頻率</button>`:''}</td>
       <td class="r sub zero" data-st="${it.code}">—</td>
     </tr>`;
   }
