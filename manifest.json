@@ -1,0 +1,19 @@
+{
+  "name": "長照給付額度試算工具",
+  "short_name": "長照額度試算",
+  "description": "長照2.0給付額度免費試算工具｜明曜居家長照",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f6f2",
+  "theme_color": "#3d5a8a",
+  "icons": [
+    {
+      "src": "./app-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
