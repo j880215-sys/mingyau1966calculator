@@ -267,7 +267,7 @@ td.sub.zero{color:var(--line);font-weight:400;}
 
 /* ── FINAL SUMMARY ── */
 .final{
-  margin-top:1.75rem;
+  margin-top:1rem;
   background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(240,236,227,.9));
   border:1px solid var(--acc); border-radius:3px;
   padding:1.4rem 1.75rem; position:relative;
@@ -295,6 +295,39 @@ td.sub.zero{color:var(--line);font-weight:400;}
 .fi.user{border-left:1px solid var(--line);}
 .fi.user .amt{color:var(--warn);}
 
+/* ── 個案額度摘要 ── */
+.case-quota{
+  margin-top:1.75rem;
+  background:rgba(255,255,255,.6);
+  border:1px solid var(--line);border-radius:3px;
+  padding:1.1rem 1.5rem;
+}
+.cq-ttl{
+  font-family:"Noto Serif TC",serif;font-weight:700;font-size:.95rem;
+  color:var(--acc-d);margin-bottom:.85rem;letter-spacing:.06em;
+  display:flex;align-items:center;gap:.4rem;
+}
+.cq-ttl::before{content:'▸';color:var(--gold);}
+.cq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.7rem;}
+.cq-item{
+  text-align:center;padding:.55rem .4rem;
+  background:rgba(240,236,227,.5);border-radius:3px;
+  border:1px solid var(--line-s);
+}
+.cq-lbl{font-size:.68rem;color:var(--ink-m);letter-spacing:.04em;margin-bottom:.32rem;line-height:1.35;}
+.cq-val{
+  font-family:"Noto Serif TC",serif;font-size:1.18rem;font-weight:700;
+  color:var(--acc-d);font-variant-numeric:tabular-nums;
+}
+.cq-val .cur{font-size:.65rem;color:var(--ink-m);font-weight:400;margin-right:.1rem;}
+.cq-val .cq-unit{font-size:.62rem;color:var(--ink-m);font-weight:400;margin-left:.12rem;}
+.cq-item.cq-level{background:rgba(61,90,138,.08);border-color:var(--acc-l);}
+.cq-item.cq-level .cq-val{font-size:1.32rem;}
+.cq-foot{
+  margin-top:.75rem;font-size:.7rem;color:var(--ink-m);
+  text-align:center;line-height:1.55;
+}
+
 /* ── 浮動「看試算結果」按鈕 ── */
 .float-result-btn{
   position:fixed;bottom:1.75rem;right:1.75rem;
@@ -321,6 +354,14 @@ td.sub.zero{color:var(--line);font-weight:400;}
   vertical-align:middle;
 }
 .freq-btn:hover{background:var(--acc);color:#fff;}
+.clr-btn{
+  font-size:.62rem;line-height:1;padding:.14rem .34rem;
+  border:1px solid var(--line);color:var(--ink-m);
+  background:transparent;border-radius:3px;cursor:pointer;
+  margin-left:.3rem;margin-top:.18rem;white-space:nowrap;transition:all .15s;
+  vertical-align:middle;
+}
+.clr-btn:hover{background:var(--warn);color:#fff;border-color:var(--warn);}
 .freq-overlay{
   display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.45);z-index:1100;
@@ -407,6 +448,7 @@ footer{
   .sub-sec.closed .sub-chev{transform:rotate(45deg);}
   .actions{display:none;}
   .freq-btn{display:none;}
+  .clr-btn{display:none;}
   .freq-overlay{display:none!important;}
   .float-result-btn{display:none;}
 }
@@ -1585,6 +1627,38 @@ footer{
     </tr></tbody></table></div>
   </div></div>
 
+<!-- ── 個案 CMS 等級與給付額度 ── -->
+<div class="case-quota" id="case-quota">
+  <div class="cq-ttl">個案 CMS 等級與給付額度</div>
+  <div class="cq-grid">
+    <div class="cq-item cq-level">
+      <div class="cq-lbl">CMS 長照需要等級</div>
+      <div class="cq-val" id="cqLevel">第四級</div>
+    </div>
+    <div class="cq-item">
+      <div class="cq-lbl">照顧及專業服務額度（B+C）</div>
+      <div class="cq-val"><span class="cur">NT$</span><span id="cqBC">18,580</span><span class="cq-unit">／月</span></div>
+    </div>
+    <div class="cq-item">
+      <div class="cq-lbl">交通接送額度（D）</div>
+      <div class="cq-val"><span class="cur">NT$</span><span id="cqD">1,840</span><span class="cq-unit">／月</span></div>
+    </div>
+    <div class="cq-item">
+      <div class="cq-lbl">輔具及居家無障礙額度（E+F）</div>
+      <div class="cq-val"><span class="cur">NT$</span><span id="cqEF">40,000</span><span class="cq-unit">／3年</span></div>
+    </div>
+    <div class="cq-item">
+      <div class="cq-lbl">喘息服務年度上限（G）</div>
+      <div class="cq-val"><span class="cur">NT$</span><span id="cqG">32,340</span><span class="cq-unit">／年</span></div>
+    </div>
+    <div class="cq-item">
+      <div class="cq-lbl">短照服務年度上限（SC）</div>
+      <div class="cq-val"><span class="cur">NT$</span><span id="cqSC">87,780</span><span class="cq-unit">／年</span></div>
+    </div>
+  </div>
+  <div class="cq-foot" id="cqFoot"></div>
+</div>
+
 <!-- ── FINAL SUMMARY ── -->
 <div class="final" id="final-section">
   <div class="final-ttl">◆ 試算總計 ◆</div>
@@ -1658,7 +1732,7 @@ function mkTable(items){
       <td class="code">${it.code}</td>
       <td class="name">${it.name}${it.half_covered?'<br><span style="font-size:.7rem;color:#b07d30;font-weight:600;">⚠ 共用區域：補助50%計入額度，另50%全額自付</span>':''}</td>
       <td class="r price">${pc}</td>
-      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}">${(it.code.startsWith('BA')||it.code.startsWith('BB')||it.code.startsWith('GA')||it.code.startsWith('SC'))?`<button type="button" class="freq-btn" onclick="openFreq('${it.code}')">📅頻率</button>`:''}</td>
+      <td class="c qty-td"><input type="number" class="qty-inp" min="0" step="1" placeholder="0" data-q="${it.code}">${(it.code.startsWith('BA')||it.code.startsWith('BB')||it.code.startsWith('GA')||it.code.startsWith('SC'))?`<button type="button" class="freq-btn" onclick="openFreq('${it.code}')">📅頻率</button>`:''}<button type="button" class="clr-btn" data-clr="${it.code}" title="清除此列" aria-label="清除此列">✕ 取消</button></td>
       <td class="r sub zero" data-st="${it.code}">—</td>
     </tr>`;
   }
@@ -1736,6 +1810,14 @@ function buildSections(){
     el.addEventListener('input',()=>{el.classList.toggle('on',parseFloat(el.value)>0);calc();});
   });
   document.querySelectorAll('.p-inp').forEach(el=>el.addEventListener('input',calc));
+  document.querySelectorAll('.clr-btn').forEach(el=>el.addEventListener('click',()=>{
+    const code=el.dataset.clr;
+    const q=document.querySelector(`.qty-inp[data-q="${code}"]`);
+    if(q){q.value='';q.classList.remove('on');}
+    const p=document.querySelector(`.p-inp[data-pf="${code}"]`);
+    if(p) p.value='';
+    calc();
+  }));
 }
 
 function makeSec(id,title,bodyFn,collapsed=false){
@@ -1896,6 +1978,22 @@ function calc(){
     const scAnnual=lv<=6?87780:71610;
     const lvLabel=lv<=6?'等級 2～6':'等級 7～8';
     scNote.textContent=`⚡ 年度短照服務額度上限（${lvLabel}）：NT$ ${fmt(scAnnual)} 元／年`;
+  }
+
+  // ── 個案 CMS 等級與對應給付額度 ──
+  const LV_NAMES={2:'第二級',3:'第三級',4:'第四級',5:'第五級',6:'第六級',7:'第七級',8:'第八級'};
+  const setTxt=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setTxt('cqLevel',LV_NAMES[lv]||('第'+lv+'級'));
+  setTxt('cqBC',fmt(bBC));
+  setTxt('cqD',fmt(bD));
+  setTxt('cqEF',fmt(BUD_EF));
+  setTxt('cqG',fmt(lv<=6?32340:48510));
+  setTxt('cqSC',fmt(lv<=6?87780:71610));
+  const cqFoot=document.getElementById('cqFoot');
+  if(cqFoot){
+    let txt='※ CMS 等級依「長照需要等級」設定；以上為政府給付額度上限，實際以照管中心核定之照顧計畫為準。';
+    if(fc) txt+='<br>※ 已選「外籍看護／同性質補助」，B+C 額度已降至 30%（限專業服務）。';
+    cqFoot.innerHTML=txt;
   }
 }
 
